@@ -1,16 +1,12 @@
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 import argparse
-import numpy as np
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-import os
 import model
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from IPython import embed
 
 parser = argparse.ArgumentParser('Options for training SqueezeNet in pytorch')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='batch size of train')
@@ -50,7 +46,7 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=args.batch_size, shuffle=True, **kwargs)
 
 # get the model and convert it into cuda for if necessary
-net  = model.SqueezeNet()
+net = model.SqueezeNet()
 if args.model_name is not None:
     print("loading pre trained weights")
     pretrained_weights = torch.load(args.model_name)
@@ -58,10 +54,12 @@ if args.model_name is not None:
 
 if args.cuda:
     net.cuda()
-#print(net)
 
+# print(net)
 # create optimizer
 # using the 55 epoch learning rule here
+
+
 def paramsforepoch(epoch):
     p = dict()
     regimes = [[1, 18, 5e-3, 5e-4],
@@ -80,6 +78,7 @@ def paramsforepoch(epoch):
             p['weight_decay'] = row[3]
     return p
 
+
 avg_loss = list()
 best_accuracy = 0.0
 fig1, ax1 = plt.subplots()
@@ -91,10 +90,12 @@ fig1, ax1 = plt.subplots()
 # create a temporary optimizer
 optimizer = optim.SGD(net.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=5e-4)
 
+
 def adjustlrwd(params):
     for param_group in optimizer.state_dict()['param_groups']:
         param_group['lr'] = params['learning_rate']
         param_group['weight_decay'] = params['weight_decay']
+
 
 # train the network
 def train(epoch):
@@ -126,7 +127,7 @@ def train(epoch):
         loss = F.nll_loss(scores, targets)
 
         # compute the accuracy
-        pred = scores.data.max(1)[1] # get the index of the max log-probability
+        pred = scores.data.max(1)[1]  # get the index of the max log-probability
         correct += pred.eq(targets.data).cpu().sum()
 
         avg_loss.append(loss.data[0])
@@ -162,7 +163,7 @@ def val():
 
         # do the forward pass
         score = net.forward(data)
-        pred = score.data.max(1)[1] # got the indices of the maximum, match them
+        pred = score.data.max(1)[1]  # got the indices of the maximum, match them
         correct += pred.eq(target.data).cpu().sum()
 
     print("predicted {} out of {}".format(correct, 73*64))
@@ -173,8 +174,9 @@ def val():
     if val_accuracy > best_accuracy:
         best_accuracy = val_accuracy
         # save the model
-        torch.save(net.state_dict(),'bsqueezenet_onfulldata.pth')
+        torch.save(net.state_dict(), 'bsqueezenet_onfulldata.pth')
     return val_accuracy
+
 
 def test():
     # load the best saved model
@@ -199,11 +201,12 @@ def test():
     print("Predicted {} out of {} correctly".format(test_correct, total_examples))
     return 100.0 * test_correct / (float(total_examples))
 
+
 if __name__ == '__main__':
     if not args.want_to_test:
         fig2, ax2 = plt.subplots()
         train_acc, val_acc = list(), list()
-        for i in range(1,args.epoch+1):
+        for i in range(1, args.epoch+1):
             train_acc.append(train(i))
             val_acc.append(val())
             ax2.plot(train_acc, 'g')

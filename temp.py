@@ -6,6 +6,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
+
 # make the model
 class Net(nn.Module):
     def __init__(self):
@@ -35,13 +36,14 @@ class Net(nn.Module):
         x = self.softmax(x)
         return x
 
+
 # create the instance of model
 model = Net()
 
-#generate the data
+# generate the data
 inp = torch.randn(128, 3, 32, 32)
 targets = torch.LongTensor(128)
-for i in xrange(0, inp.size()[0]):
+for i in range(0, inp.size()[0]):
     throw = np.random.uniform()
     if throw > 0.5:
         targets[i] = 1
@@ -54,6 +56,7 @@ targets = torch.split(targets, 16)
 # define an optimizer
 optimizer = optim.Adam(model.parameters(), betas=(0.9, 0.999), lr=3e-3, eps=1e-8, weight_decay=0.05)
 avg_loss = list()
+
 
 # train the model for some number of epochs
 def train(epoch):
@@ -77,7 +80,8 @@ def train(epoch):
             plt.savefig("avg_loss.jpg")
     plt.close()
 
+
 if __name__ == '__main__':
     epoch = 100
-    for i in xrange(epoch):
+    for i in range(epoch):
         train(i)
